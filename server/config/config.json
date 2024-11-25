@@ -1,0 +1,5 @@
+{
+    "version": 0.1,
+    "name": "server config",
+    "allowed_command": ["ls", "kill", "create", "screen"]
+}

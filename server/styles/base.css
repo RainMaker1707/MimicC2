@@ -1,0 +1,13 @@
+header{
+    display: inline-block;
+}
+
+body{
+    display: inline-block;
+    margin: 0;
+}
+
+.formLogin{
+    display: flex;
+    
+}
