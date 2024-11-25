@@ -1,0 +1,19 @@
+{
+    "version": 1.1,
+    "name": "implant config",
+    "allowed_commands": ["ls", "kill", "create", "screen", "screenshot"],
+    "get_dictionary":[
+        "/",
+        "/home",
+        "/forum",
+        "/profile",
+        "/profile/",
+        "/forum/post/"
+    ],
+    "post_dictionary": [
+        "/login",
+        "/signin",
+        "/logout",
+        "/forum/post"
+    ]
+}
