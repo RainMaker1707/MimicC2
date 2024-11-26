@@ -15,7 +15,18 @@
 }
 
 #menuButton{
-    padding-left: 30px;
+    margin-top: 20vh;
+    width: 10vw;
+    height: 30vh;
+    border: solid #333 5px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+#menuButton img{
+    margin-left: -2vw;
+    width: 14vw;
+    height: 30vh;
 }
 
 #logButton{
