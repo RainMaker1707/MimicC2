@@ -1,3 +1,13 @@
+import re
+import random
+
+
+"""
+Check if the server IP is an IPv4 with or without port specification.
+Port specification is not assessed.
+@param: server: IPv4 string (i.e. 0.0.0.0, 127.0.0.1:5000, 8.8.8.8:45000)
+@returns: True if server is an IPv4, False either
+"""
 def is_ipv4(server):
     if ":" in server:
         splitted = server.split(":")
@@ -18,6 +28,19 @@ def is_ipv4(server):
     return True
 
 
-def choose_target(res, method="GET"):
-    print(res)
-    return "/"
+"""
+This function choose randomly an URI available in res with the good method
+This function uses the config file to know which URI relies to which method
+@param: res: the HTML page received (string)
+@param: method: GET or POST, HTTP method
+@returns: string: the URI chosen
+"""
+def choose_target(res, configs, method="GET"):
+    urls = configs.get("get_dictionary") if method == "GET" else configs.get("post_dictionary")
+    available = []
+    for url in urls:
+        if url in res:
+            available.append(url)
+    print(available)
+    # TODO choose target in URI available in argument res
+    return random.choice(available)

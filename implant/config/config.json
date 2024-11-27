@@ -8,12 +8,14 @@
         "/forum",
         "/profile",
         "/profile/",
-        "/forum/post/"
+        "/forum/post/",
+        "/login",
+        "/signin",
+        "/logout"
     ],
     "post_dictionary": [
         "/login",
         "/signin",
-        "/logout",
         "/forum/post"
     ]
 }
