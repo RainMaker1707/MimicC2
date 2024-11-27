@@ -10,8 +10,8 @@ END = "\033[0m"
 
 
 app = Flask(__name__, template_folder="static", static_folder="static")
-log = logging.getLogger("werkzeug")
-log.disabled = True
+# log = logging.getLogger("werkzeug")
+# log.disabled = True
 
 commands = list()
 allowed_commands = ["ls", "kill", "create", "screenshot"]
