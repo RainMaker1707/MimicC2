@@ -38,3 +38,4 @@ def screen():
     sc = ImageGrab.grab()
     sc.save("temp.png")
     sc.close()
+    return sc
