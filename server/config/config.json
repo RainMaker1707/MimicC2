@@ -1,5 +1,21 @@
 {
     "version": 0.1,
     "name": "server config",
-    "allowed_command": ["ls", "kill", "create", "screen"]
+    "allowed_command": ["ls", "kill", "create", "screen"],
+    "get_dictionary":[
+        "/",
+        "/home",
+        "/forum",
+        "/profile",
+        "/profile/",
+        "/forum/post/",
+        "/login",
+        "/signin",
+        "/logout"
+    ],
+    "post_dictionary": [
+        "/login",
+        "/signin",
+        "/forum/post"
+    ]
 }

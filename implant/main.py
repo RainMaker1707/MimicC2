@@ -14,6 +14,8 @@ from src.utils import *
 from src.runner import *
 
 
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'}
+
 
 
 server = "0.0.0.0"
@@ -22,23 +24,23 @@ with open("config/config.json", "r") as file:
 print(f'{configs.get("name")}: v{configs.get("version")}')
 
 
-def http_request(server, methods="GET", target="/", data=""):
+def http_request(server, methods="GET", target="/", data="", headers={}):
     if not is_ipv4(server):
         print("Invalid server IPv4")
         raise RequestError
     if methods == "POST":
-        return post_request(server, target, data)
+        return post_request(server, target, data, headers)
     elif methods == "GET":
-        return get_request(server, target)
+        return get_request(server, target, headers)
     else:
         raise MethodError
 
 
-def get_request(server, target="/"):
-    return requests.get(url="http://" + server + target, params={})
+def get_request(server, target="/", headers={}):
+    return requests.get(url="http://" + server + target, params={}, headers=headers)
 
-def post_request(server, target="/", data=""):
-    return requests.post(url="http://" + server + target, data={"data":f'{data}'.encode()})
+def post_request(server, target="/", data="", headers={}):
+    return requests.post(url="http://" + server + target, data={"data":f'{data}'.encode()}, headers=headers)
 
 
 def start(stop_event):
