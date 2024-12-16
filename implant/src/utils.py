@@ -36,11 +36,14 @@ This function uses the config file to know which URI relies to which method
 @returns: string: the URI chosen
 """
 def choose_target(res, configs, method="GET"):
-    urls = configs.get("get_dictionary") if method == "GET" else configs.get("post_dictionary")
-    available = []
-    for url in urls:
-        if url in res:
-            available.append(url)
-    print(available)
-    # TODO choose target in URI available in argument res
-    return random.choice(available)
+    try:
+        urls = configs.get("get_dictionary") if method == "GET" else configs.get("post_dictionary")
+        available = ["/"]
+        for url in urls:
+            if url+'"' in res:
+                available.append(url)
+        print(available)
+        # TODO choose target in URI available in argument res
+        return random.choice(available)
+    except:
+        return "/forum"

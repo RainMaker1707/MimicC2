@@ -1,0 +1,26 @@
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles/character.css')}}"/>
+
+<div class="character-page">
+
+    <div class="char-text">
+        <h2>Story</h2>
+        {{STORY | safe }}
+        <h2>Specialty</h2>
+        {{SPEC | safe}}
+        <h2>Related</h2>
+        {{LINKS | safe}}
+    </div>
+
+    <div class="char-header">
+        <div class="char-img">
+            <img src="{{IMG | safe}}"/>
+        </div>
+        <p>{{NAME | safe}}</p>
+        <div class="explain-box">
+            <div class="grade">{{GRADE | safe}}</div>
+            <div class="function">SG1</div>
+            <div class="planet">Earth</div>
+        </div>
+    </div>
+
+</div>

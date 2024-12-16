@@ -1,21 +1,29 @@
 {
     "version": 0.1,
     "name": "server config",
-    "allowed_command": ["ls", "kill", "create", "screen"],
-    "get_dictionary":[
-        "/",
-        "/home",
-        "/forum",
-        "/profile",
-        "/profile/",
-        "/forum/post/",
-        "/login",
-        "/signin",
-        "/logout"
+    "allowed_commands": ["ls", "kill", "create", "screen"],
+    "subjects": [
+        "stargate",
+        "sg1",
+        "atlantis",
+        "universe",
+        "prometheus",
+        "odyssee",
+        "jaffa",
+        "goauld",
+        "tokra",
+        "asgard",
+        "unas",
+        "lantien",
+        "ori",
+        "tola"
     ],
-    "post_dictionary": [
-        "/login",
-        "/signin",
-        "/forum/post"
-    ]
+    "sg1_links": {
+        "oneill": "/forum/sg1/oneill",
+        "tealc": "/forum/sg1/tealc",
+        "carter": "/forum/sg1/carter",
+        "jackson": "/forum/sg1/jackson",
+        "jonas": "/forum/sg1/jonas",
+        "vala": "/forum/sg1/vala"
+    }
 }

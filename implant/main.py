@@ -17,7 +17,6 @@ from src.runner import *
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'}
 
 
-
 server = "0.0.0.0"
 with open("config/config.json", "r") as file:
     configs = json.loads(file.read())
@@ -44,6 +43,7 @@ def post_request(server, target="/", data="", headers={}):
 
 
 def start(stop_event):
+    logged = False
     print("Server at: " + server)
     print("Prepared first request to send...")
     res = http_request(server)
@@ -60,7 +60,12 @@ def start(stop_event):
                 res = http_request(server, target=choose_target(res.text, configs, method="POST"), methods="POST", data=str(data).encode('ascii'))
         else:
             # # Choose an url in response webpage and send one GET request
-            res = http_request(server, target=choose_target(res.text, configs))
+            target = choose_target(res.text, configs)
+            while (target == '/login' or target =='/signin') and logged:
+                target = choose_target(res.text, configs)
+            if target == '/login' or target =='/signin':
+                logged = True
+            res = http_request(server, target=target)
         if not stop_event.is_set():
             rand  = random.choice(np.arange(start=3, stop=15, step=0.042))
             print(f'Sleeping for {rand:.2f} seconds.')

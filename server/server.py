@@ -1,8 +1,7 @@
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, request, redirect, make_response
 from threading import Thread
 import json
 import random
-import logging
 
 
 BOLD = "\033[1m"
@@ -12,11 +11,8 @@ END = "\033[0m"
 
 
 app = Flask(__name__, template_folder="static", static_folder="static")
-# log = logging.getLogger("werkzeug")
-# log.disabled = True
 
 commands = list()
-allowed_commands = ["ls", "kill", "create", "screenshot"]
 
 configs = dict()
 with open("config/config.json", "r") as file:
@@ -24,7 +20,6 @@ with open("config/config.json", "r") as file:
 
 
 def get_command():
-    # Call only if there is waiting command(s) else return None
     if len(commands) == 0: return ""
     cmd = commands.pop(0)
     return cmd
@@ -41,46 +36,43 @@ def handle_post(request):
     return data
 
 
-def build_links():
-    html = '<div class="links" hidden>'
-    for url in configs.get("get_dictionary"):
-        if random.choice([True, False, True, False, True, False, True]):
-            html += f'<a href="{url}">{url.split("/")[-1].upper()}</a>'
-    url = random.choice(configs.get("get_dictionary"))
-    html += f'<a href="{url}">{url.split("/")[-1].upper()}</a>'
-    html += "</div>"
-    return html
-
 
 
 @app.route("/", methods=["GET"])
 @app.route("/home", methods=["GET"])
 def home():
-    return render_template("home.html", 
+    resp = make_response(
+            render_template("base.html", TITLE="Home",
                         MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
                         STYLE=url_for('static', filename="styles/base.css"), 
-                        COMMANDS= render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
-                        LINKS=build_links()
+                        COMMANDS= render_template("commands.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
+                        ADD=render_template("html/home.html")
                         )
+                    )
+    resp.set_cookie('logged', 'False')
+    return resp
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         handle_post(request)
-        return redirect("/profile", code=302)
+        resp = make_response(redirect("/profile", code=302))
+        resp.set_cookie('logged', 'True')
+        return resp
     else:
-        return render_template("home.html", 
+        if request.cookies.get("logged") == "True":
+            return redirect("/profile", code=302)
+        return render_template("base.html", TITLE="Login",
                             MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
                             STYLE=url_for('static', filename="styles/base.css"),
-                            COMMANDS=render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
-                            ADD=render_template("form.html",
+                            COMMANDS=render_template("commands.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
+                            ADD=render_template("forms/form.html",
                                 CLASS="formLogin",
                                 ACTION="/login",
-                                CONTENT=render_template("form_input.html", LABEL="Pseudo", TYPE="text") 
-                                        + render_template("form_input.html", LABEL="Password", TYPE="password")
+                                CONTENT=render_template("forms/form_input.html", LABEL="Pseudo", TYPE="text") 
+                                        + render_template("forms/form_input.html", LABEL="Password", TYPE="password")
                             ),
-                            LINKS=build_links()
                         )
 
 
@@ -89,48 +81,100 @@ def signin():
     if request.method == "POST":
         handle_post(request)
         return redirect("/profile", code=302)
-    return render_template("home.html", 
+    else:
+        if request.cookies.get("logged") == "True":
+                return redirect("/profile", code=302)
+        return render_template("base.html", TITLE="Signin",
                             MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
                             STYLE=url_for('static', filename="styles/base.css"),
-                            COMMANDS=render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
-                            ADD=render_template("form.html",
+                            COMMANDS=render_template("commands.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
+                            ADD=render_template("forms/form.html",
                                 CLASS="formLogin",
                                 ACTION="/signin",
-                                CONTENT=render_template("form_input.html", LABEL="Pseudo", TYPE="text") 
-                                        + render_template("form_input.html", LABEL="Password", TYPE="password")
-                                        + render_template("form_input.html", LABEL="Password confirmation", TYPE="password")
+                                CONTENT=render_template("forms/form_input.html", LABEL="Pseudo", TYPE="text") 
+                                        + render_template("forms/form_input.html", LABEL="Password", TYPE="password")
+                                        + render_template("forms/form_input.html", LABEL="Password confirmation", TYPE="password")
                             ),
-                            LINKS=build_links()
                         )
 
 
 @app.route("/profile", methods=["GET"])
-@app.route("/profile/<user_id>", methods=["GET"])
 def profile():
-    return render_template("home.html",
+    if not request.cookies.get('logged') == "True":
+        return redirect("/login", code=302)
+    return render_template("base.html", TITLE="Profile",
                             MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
                             STYLE=url_for('static', filename="styles/base.css"),
-                            COMMANDS=render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
-                            ADD=render_template("profile.html", ),
-                            LINKS=build_links()
+                            COMMANDS=render_template("commands.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
+                            ADD=render_template("profile.html", NAME="Heru'ur", RANK="members", INS="17-07-2023"),
                             )
 
 
 @app.route("/logout", methods=["GET"])
 def logout():
-    return redirect("/", code=302)
+    resp = make_response(redirect("/", code=302))
+    resp.set_cookie('logged', "False")
+    return resp
 
 
 @app.route("/forum", methods=["GET"])
-@app.route("/forum/post", methods=["GET", "POST"])
-@app.route("/forum/post/<post_id>", methods=["GET", "POST"])
-def test():
-    return render_template("home.html", 
-                        MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
-                        STYLE=url_for('static', filename="styles/base.css"), 
-                        COMMANDS= render_template("base.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
-                        LINKS=build_links()
-                        )
+@app.route("/forum/", methods=["GET"])
+def forum():
+    return render_template("base.html", TITLE='Forum', 
+                            ADD=render_template("/html/subject.html"),
+                            MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
+                            STYLE=url_for('static', filename="styles/base.css"),
+                            COMMANDS=render_template("commands.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",)
+
+
+@app.route("/forum/<string:sub>", methods=["GET"])
+@app.route("/forum/<string:sub>/", methods=["GET"])
+def subject(sub):
+    if sub not in configs.get("subjects"):
+        return redirect("/forum", code=404)
+    else:
+        if sub == "sg1":
+            links = configs.get("sg1_links")
+            members = {"oneill": "Jack O'Neill", "jackson": "Daniel Jackson", "carter":"Samantha Carter", "tealc":"Teal'c", "vala": "Vala Maldoran", "jonas": "Jonas Quinn"}
+            bal = ""
+            for e  in [f'<a href="{links.get(key)}">{members.get(key)}</a></br>' for key in links.keys()]:
+                bal += e 
+            return render_template("base.html", TITLE=f'SG1',
+                                MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
+                                STYLE=url_for('static', filename="styles/base.css"),
+                                COMMANDS=render_template("commands.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
+                                ADD=bal)
+        else:
+            return "PASS"
+
+
+@app.route("/forum/<string:sub>/<string:wiki>", methods=["GET"])
+@app.route("/forum/<string:sub>/<string:wiki>/", methods=["GET"])
+def wiki_page(sub, wiki):
+    if sub not in configs.get("subjects"):
+        return redirect("/forum", code=404)
+    else:
+        if sub == "sg1":
+            links = configs.get("sg1_links")
+            members = {"oneill": "Jack O'Neill", "jackson": "Daniel Jackson", "carter":"Samantha Carter", "tealc":"Teal'c", "vala": "Vala Maldoran", "jonas": "Jonas Quinn"}
+            if wiki not in members.keys():
+                return redirect("/forum/sg1", code=404)
+            bal = ""
+            for e  in [f'<a href="{links.get(key)}">{members.get(key)}</a></br>' for key in links.keys() if key != wiki]:
+                bal += e 
+            return render_template("base.html", TITLE=f'Wiki - {members.get(wiki)}',
+                                MENU=render_template("menu/menubar.html", STYLE=url_for('static', filename="styles/menubar.css")), 
+                                STYLE=url_for('static', filename="styles/base.css"),
+                                COMMANDS=render_template("commands.html", COMMANDS=f'[{get_command()}]') if len(commands) > 0 else "",
+                                ADD=render_template("html/character.html",
+                                    IMG=url_for('static', filename=f'imgs/{wiki}.jpg'),
+                                    NAME=members.get(wiki),
+                                    LINKS=bal
+                                    ),
+                                )
+        return wiki
+
+
 
 
 
@@ -147,7 +191,7 @@ def operator_interface():
         command = input("Enter a command:")
         print(command)
         if len(command.split()) > 0:
-            if command.split()[0] in allowed_commands:
+            if command.split()[0] in configs.get("allowed_commands"):
                 commands.append(command)
                 print("Command added to next send")
             elif command == "exit":
